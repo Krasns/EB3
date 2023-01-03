@@ -1,0 +1,65 @@
+﻿@page "/romannumerals"
+@using EB3.Shared
+@inject EB3.Client.Services.IRomanNumeralService RomanNumeralService
+
+
+<h3>Roman Numerals</h3>
+
+<EditForm Model="@newConverson" OnValidSubmit="@PostConvertNumber">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="row">
+        <div class="col-4">
+            <label for="hinduArabicNumeral">Enter numbers from 1 to 3999</label>
+            <input id="hinduArabicNumeral" @bind-value="newConverson.HinduArabicNumeral" class="form-control" />
+            <button type="submit" class="col-12 btn btn-primary" onclick="">Convert</button>
+        </div> 
+        <div class="col-sm-1">
+        </div>
+    </div>
+
+</EditForm>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Roman numeral</th>
+                <th>Hindu-Arabic number</th>
+                <th>Input time</th>
+            </tr>
+        </thead>
+        <tbody>
+        @foreach (var numeral in Numerals)
+        {
+                    <tr>
+                        <td>@numeral.Id</td>
+                        <td>@numeral.Numeral</td>
+                        <td>@numeral.HinduArabicNumeral</td>
+                        <td>@numeral.DateCreated.ToString("dddd, dd MMMM yyyy HH:mm")</td>
+                    </tr>
+        }
+        </tbody>
+    </table>
+
+
+@code {
+
+    private List<RomanNumeral> Numerals = new List<RomanNumeral>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        Numerals = await RomanNumeralService.GetRomanNumerals();
+    }
+
+
+    EB3.Shared.RomanNumeral newConverson = new EB3.Shared.RomanNumeral();
+
+    async Task PostConvertNumber()
+    {
+        newConverson.Numeral = RomanNumeralService.Generate(newConverson.HinduArabicNumeral).ToString();
+        var result = await RomanNumeralService.PostConvertNumber(newConverson);
+        Numerals = await RomanNumeralService.GetRomanNumerals();
+    }
+}
